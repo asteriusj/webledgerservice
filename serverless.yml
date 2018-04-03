@@ -1,0 +1,480 @@
+# Serverless definition file
+# --------------------------
+# Defines Lambda functions to be deployed to AWS using the Serverless Framework.
+# http://serverless.com
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# WebLedgerSvcs
+#
+# Implementation of The Web Ledger Protocol 1.0
+# A format and protocol for decentralized ledgers on the Web
+# https://w3c.github.io/web-ledger/
+#
+# Service	Example URL	Description
+# ledgerAgentCreateService	POST /ledger-agents	Create a ledger agent.
+# ledgerAgentListService	GET /ledger-agents	Get all ledger agents.
+# ledgerAgentStatusService	GET /ledger-agents/{agent}	Get the current status of the ledger agent.
+# ledgerEventService	POST /ledger-agents/{agent}/events	Request the addition of an event to ledger.
+# ledgerBlockService	GET /ledger-agents/{agent}/blocks	Get a specific block from the ledger.
+# ledgerQueryService	GET /ledger-agents/{agent}/query	Query the current state of the ledger.
+
+service: WebLedgerService
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  region: us-east-1
+  memorySize: 128
+  timeout: 45
+  environment: ${file(env.yml):${self:provider.stage}}
+  
+# you can add statements to the Lambda function's IAM Role here
+#  iamRoleStatements:
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:ListBucket"
+#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:PutObject"
+#      Resource:
+#        Fn::Join:
+#          - ""
+#          - - "arn:aws:s3:::"
+#            - "Ref" : "ServerlessDeploymentBucket"
+#            - "/*"
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+
+functions:
+
+  hello:
+    handler: handler.hello
+    description: Say Hello
+    events:
+      - http:
+          path: hello
+          method: get
+          cors: 
+            origins:               
+              - '*'
+
+
+  # 4.2 Agent Create Service ledgerAgentCreateService Create a ledger agent.
+  ledgerAgentCreateService:
+    handler: webledgerHanders.ledgerAgentCreateService
+    description: Create a ledger agent.
+    tags: 
+    events:
+      - http:
+          path:  /ledger-agents
+          method: post
+          request:
+            parameters:
+              querystrings:
+              headers:
+              paths:
+          responses:
+            200:
+              description: 
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      - $ref: "#/definitions/ConfigurationBlock"
+            201:
+              description: Ledger creation was successful. The HTTP Location header will contain the URL for the newly created ledger.  
+            400:
+              description: Ledger creation failed.
+              $ref: "#/responses/400BadRequest"
+            409:
+              description: A duplicate ledger exists.
+              $ref: "#/responses/409DuplicateRecord"
+            500:
+              $ref: "#/responses/500ServerError"
+            503:
+              $ref: "#/responses/503ServiceUnavailable"
+          cors: 
+            origins:               
+              - '*'
+  
+  
+  # /ledger-agents ledgerAgentListService	Get all ledger agents.
+  ledgerAgentListService:
+    handler: webledgerHanders.ledgerAgentListService
+    description: Get all ledger agents.
+    tags: 
+    events:
+      - http:
+          path: /ledger-agents
+          method: get
+          request:
+            parameters:
+              - $ref: "#/parameters/head"
+              - $ref: "#/parameters/start"
+              - $ref: "#/parameters/limit"
+              - $ref: "#/parameters/reverse"
+            querystrings:
+            headers:
+            paths:
+          responses:
+            200:
+              description: The list of ledgers was found and will be returned in the body of the response.
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      - $ref: "#/definitions/Agent"
+                  head:
+                    $ref: "#/definitions/Head"
+                  link:
+                    $ref: "#/definitions/Link"
+                  paging:
+                    $ref: "#/definitions/Paging"
+            
+            404:
+              description: 	The list of ledgers was not found at the given URL.
+              $ref: "#/responses/404NotFound"
+            500:
+              $ref: "#/responses/500ServerError"
+            503:
+              $ref: "#/responses/503ServiceUnavailable"
+          cors: 
+            origins:               
+              - '*'
+         
+              
+  # /ledger-agents/{agent} ledgerAgentStatusService	Get the current status of the ledger agent.
+  ledgerAgentStatusService:
+    handler: webledgerHanders.ledgerAgentStatusService
+    description: Get the current status of the ledger agent. 
+    tags: 
+    events:
+      - http:
+          path: /ledger-agents/{agent}
+          method: get
+          request:
+            parameters:
+              - $ref: "#/parameters/head"
+              - $ref: "#/parameters/start"
+              - $ref: "#/parameters/limit"
+              - $ref: "#/parameters/reverse"
+            querystrings:
+            headers:
+            paths:
+          responses:
+            200:
+              description: The ledger agent status was found and will be returned in the body of the response.
+              schema:
+                properties:
+                  data:
+                    $ref: "#/definitions/Block"
+                  head:
+                    $ref: "#/definitions/Head"
+                  link:
+                    $ref: "#/definitions/Link"
+            400:
+              $ref: "#/responses/400BadRequest"
+            404:
+              description: The ledger agent status was not found at the given URL.
+              $ref: "#/responses/404NotFound"
+            500:
+              $ref: "#/responses/500ServerError"
+            503:
+              $ref: "#/responses/503ServiceUnavailable"
+          cors: 
+            origins:               
+              - '*'
+ 
+  
+  # 4.5 Ledger Append Service  ledgerAppendService
+  ledgerAppendService:
+    handler: webledgerHanders.ledgerAppendService
+    description: Appending to a ledger can be achieved by performing an HTTP POST of a LedgerStorageBlock to the ledgerAppendService. 
+    tags: 
+    events:
+      - http:
+          path:  /ledger-agents/{agent}/events
+          method: post
+          request:
+            parameters:
+              querystrings:
+              headers:
+              paths:
+                
+          responses:
+            200:
+              description: The ledger block was sucessfully appended.
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      - $ref: "#/definitions/Block"
+                  
+            400:
+              description: The ledger block failed to be appended.
+              $ref: "#/responses/400BadRequest"
+            404:
+              description: The ledger block was not found at the given URL.
+              $ref: "#/responses/404NotFound"
+            409:
+              description: The ledger block with the given identifier already exists.
+              $ref: "#/responses/409DuplicateRecord"
+            500:
+              $ref: "#/responses/500ServerError"
+            503:
+              $ref: "#/responses/503ServiceUnavailable"
+          cors: 
+            origins:               
+              - '*'
+  
+  # ledgerEventService Request the addition of an event to ledger.
+  ledgerEventService:
+    handler: webledgerHanders.ledgerEventService
+    description: Request the addition of an event to ledger.
+    tags: 
+    events:
+      - http:
+          path:  /ledger-agents/{agent}/events
+          method: post
+          request:
+            parameters:
+              querystrings:
+              headers:
+              paths:
+                id: false
+          cors: 
+            origins:               
+              - '*'
+  
+
+  # 4.6 Ledger Block Service ledgerBlockService Get a specific block from the ledger.
+  ledgerBlockService:
+    handler: webledgerHanders.ledgerBlockService
+    description: A ledger read for an block is achieved by performing an HTTP GET on a ledger block identifier. The list of ledger blocks is available by performing an HTTP GET on the ledgerBlockService.
+    tags: 
+    events:
+      - http:
+          path: /ledger-agents/{agent}/blocks
+          method: get
+          request:
+            parameters:
+              - $ref: "#/parameters/head"
+              - $ref: "#/parameters/start"
+              - $ref: "#/parameters/limit"
+              - $ref: "#/parameters/reverse"
+            querystrings:
+              id: true
+            headers:
+            paths:
+          responses:
+            200:
+              description: Retrieval of the ledger block was successful.
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      - $ref: "#/definitions/Block"
+                  head:
+                    $ref: "#/definitions/Head"
+                  link:
+                    $ref: "#/definitions/Link"
+                  paging:
+                    $ref: "#/definitions/Paging"
+            400:
+              $ref: "#/responses/400BadRequest"
+            404:
+              description: The ledger block was not found at the given URL.
+              $ref: "#/responses/404NotFound"
+            500:
+              $ref: "#/responses/500ServerError"
+            503:
+              $ref: "#/responses/503ServiceUnavailable"
+          cors: 
+            origins:               
+              - '*'
+
+  # 4.7 Ledger Query Service  ledgerQueryService	Query the current state of the ledger.
+  # GET /ledger-agents/example/query?id=http://www.coupon-clearing.org/coupons/486211708
+  ledgerQueryService:
+    handler: webledgerHanders.ledgerQueryService
+    description: Query the current state of the ledger.
+    tags: 
+    events:
+      - http:
+          path: /ledger-agents/{agent}/query
+          method: get
+          request:
+            parameters:
+              querystrings:
+                id: true
+              headers:
+              paths:
+          responses:
+            200:
+              description: Retrieval of the latest state machine object was successful.
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      - $ref: "#/definitions/Block"
+            400:
+              description: The query was malformed.
+              $ref: "#/responses/400BadRequest"
+            404:
+              description: The given state machine object was not found.
+              $ref: "#/responses/404NotFound"
+            500:
+              $ref: "#/responses/500ServerError"
+            502:
+              $ref: "#/responses/502ConfigurationError"
+            503:
+              $ref: "#/responses/503ServiceUnavailable"
+          cors: 
+            origins:               
+              - '*'
+  
+    
+
+
+
+definitions:
+  Head:
+    type: string
+    example: 65cd3a3ce088b265b626f704b7f3db97b6f12e848dccb35d7806f3d0324c71b709ed360d602b8b658b94695374717e3bdb4b76f77886953777d5d008558247dd
+  Link:
+    type: string
+    example: https://api.sawtooth.com/state?head=65cd3a3ce088b265b626f704b7f3db97b6f12e848dccb35d7806f3d0324c71b709ed360d602b8b658b94695374717e3bdb4b76f77886953777d5d008558247dd
+  Paging:
+    properties:
+      start:
+        type: string
+        example: "65cd3a3ce088b265b626f704b7f3db97b6f12e848dccb35d7806f3d0324c71b709ed360d602b8b658b94695374717e3bdb4b76f77886953777d5d008558247dd"
+      limit:
+        type: integer
+        example: 54321
+      next_position:
+        type: string
+        example: "65cd3a3ce088b265b626f704b7f3db97b6f12e848dccb35d7806f3d0324c71b709ed360d602b8b658b94695374717e3bdb4b76f77886953777d5d008558247dd"
+      next:
+        type: string
+        example: https://api.sawtooth.com/state?head=65cd3a3ce088b265b626f704b7f3db97b6f12e848dccb35d7806f3d0324c71b709ed360d602b8b658b94695374717e3bdb4b76f77886953777d5d008558247dd&start=2000&limit=1000
+
+  Error:
+    properties:
+      code:
+        type: integer
+        example: 34
+      title:
+          type: string
+          example: No Batches Submitted
+      message:
+        type: string
+        example: >
+          The protobuf BatchList you submitted was empty and contained no
+          Batches. You must submit at least one Batch.
+
+  Entry:
+    properties:
+      address:
+        type: string
+        example: 1cf12650d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c
+      data:
+        type: string
+        format: byte
+        example: Zm9vOmJhcg==
+
+  BlockHeader:
+    properties:
+      block_num:
+        type: integer
+        example: 12345
+      previous_block_id:
+        type: string
+        example: 65cd3a3ce088b265b626f704b7f3db97b6f12e848dccb35d7806f3d0324c71b709ed360d602b8b658b94695374717e3bdb4b76f77886953777d5d008558247dd
+      signer_public_key:
+        type: string
+        example: 02d260a46457a064733153e09840c322bee1dff34445d7d49e19e60abd18fd0758
+      batch_ids:
+        type: array
+        items:
+          type: string
+          example: 89807bfc9089e37e00d87d97357de14cfbc455cd608438d426a625a30a0da9a31c406983803c4aa27e1f32a3ff61709e8ec4b56abbc553d7d330635b5d27029c
+      consensus:
+        type: string
+        format: binary
+      state_root_hash:
+        type: string
+        example: 708ca7fbb701799bb387f2e50deaca402e8502abe229f705693d2d4f350e1ad6
+  
+  Block:
+    properties:
+      header:
+        $ref: "#/definitions/BlockHeader"
+      header_signature:
+        type: string
+        example: 65cd3a3ce088b265b626f704b7f3db97b6f12e848dccb35d7806f3d0324c71b709ed360d602b8b658b94695374717e3bdb4b76f77886953777d5d008558247dd
+      batches:
+        type: array
+        items:
+          $ref: "#/definitions/Batch"
+  
+  ConfigurationBlock:
+    properties:
+      header:
+        $ref: "#/definitions/BlockHeader"
+      header_signature:
+        type: string
+        example: 65cd3a3ce088b265b626f704b7f3db97b6f12e848dccb35d7806f3d0324c71b709ed360d602b8b658b94695374717e3bdb4b76f77886953777d5d008558247dd
+      batches:
+        type: array
+        items:
+          $ref: "#/definitions/Batch"
+          
+responses:
+  400BadRequest:
+    description: Request was malformed
+    schema:
+      $ref: "#/definitions/Error"
+  404NotFound:
+    description: Address or id did not match any resource
+    schema:
+      $ref: "#/definitions/Error"
+  409DuplicateRecord:
+    description: A duplicate record exists.
+    schema:
+      $ref: "#/definitions/Error"
+  429TooManyRequests:
+    description: Too many requests have been made to process batches
+    schema:
+      $ref: "#/definitions/Error"
+  500ServerError:
+    description: Something went wrong within the validator
+    schema:
+      $ref: "#/definitions/Error"
+  502ConfigurationError:
+    description: Execution failed due to configuration error
+    schema:
+      $ref: "#/definitions/Error"
+  503ServiceUnavailable:
+    description: API is unable to reach the validator
+    schema:
+      $ref: "#/definitions/Error"
