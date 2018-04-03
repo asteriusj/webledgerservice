@@ -1,7 +1,36 @@
-# webledgerservice
-Implementation of The Web Ledger Protocol 1.0 
+I am building an immutable transaction logging function (i.e.blockvhain) using [W3C Web Ledger Protocol](https://lnkd.in/eN5hT6P) 
+for a multi-source ["Semantic Data Master (SDM) - Next Gen MDM"](https://lnkd.in/eUYHyyd) project. 
+
+Who would like to work on this with me as an Open Source project?
+
+
+# [webledgerservice](https://github.com/asteriusj/webledgerservice)
+
+An Implementation of The Web Ledger Protocol 1.0
+
 A format and protocol for decentralized ledgers on the Web 
-https://w3c.github.io/web-ledger/
+[https://w3c.github.io/web-ledger/](https://w3c.github.io/web-ledger/)
+
+This is a W3C Community Group Draft Report
+
+This specification was published by the [W3C Blockchain Community Group](http://www.w3.org/community/blockchain/) on 01 March 2018.
+
+The [Source code](https://github.com/w3c/web-ledger/tree/master/) for the specification can be found on Github.
+
+## Objective
+
+The objective of the webledgerservice project is to build an implemetatyion of the Ledger Agent HTTP API endpoints as defined by the specification.
+
+Such an implemetation can be used as a simple 'standardized' example of open source blockchain technology components.
+
+The near term motivation is to use the components as part of a master data management system interagation event logging function. 
+
+The function will also incorporate data source provenence information and the log will provide a tracaable and immutable record of system intergation activity.
+
+
+
+#
+# Workspace preperation
 
 ### Install serverless globally
 npm install serverless -g
@@ -9,11 +38,16 @@ npm install serverless -g
 ### Create a serverless function
 serverless create --template aws-nodejs
 
-## Test stack locally
+### Test stack locally
 serverless invoke local -f hello --data '{"key":"bar"}' --log
 
-### Deploy to cloud provider
-serverless deploy --aws-profile default
+### Setup cloud credentials
+https://serverless.com/framework/docs/providers/aws/guide/credentials/
+export AWS_ACCESS_KEY_ID=<your-key-here>
+export AWS_SECRET_ACCESS_KEY=<your-secret-key-here>
+
+### AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are now available for serverless to use
+serverless deploy
 
 ### github
 $ git add <folders and files>
@@ -22,199 +56,33 @@ $ git push https://github.com/asteriusj/webledgerservice
 Username for 'https://github.com': asteriusj
 Password for 'https://asteriusj@github.com': ******
 
-# Implementation of The Web Ledger Protocol 1.0
+
+
+# Project Description
+
+## Implementation of The Web Ledger Protocol 1.0
  A format and protocol for decentralized ledgers on the Web
- https://w3c.github.io/web-ledger/
-
- Service	                Example URL	                         Description
- ledgerAgentCreateService	POST  /ledger-agents	             Create a ledger agent.
- ledgerAgentListService	    GET   /ledger-agents	             Get all ledger agents.
- ledgerAgentStatusService	GET   /ledger-agents/{agent}	     Get the current status of the ledger agent.
- ledgerEventService	        POST  /ledger-agents/{agent}/events	 Request the addition of an event to ledger.
- ledgerBlockService	        GET   /ledger-agents/{agent}/blocks	 Get a specific block from the ledger.
- ledgerQueryService	        GET   /ledger-agents/{agent}/query	 Query the current state of the ledger.
+ [https://w3c.github.io/web-ledger/](https://w3c.github.io/web-ledger/)
 
 
+## Service listing
 
-<!--// https://w3c.github.io/web-ledger/-->
-<!--//-->
-<!--// 3.2 Configuration Block-->
-<!--// {-->
-<!--//   "@context": "https://w3id.org/web-ledger/v1",-->
-<!--//   "id": BLOCK_ID,-->
-<!--//   "type": "LedgerConfigurationBlock",-->
-<!--//   "ledgerConfig": {-->
-<!--//     "id": LEDGER_ID,-->
-<!--//     "type": "LedgerConfiguration",-->
-<!--//     "name": "example",-->
-<!--//     "description": "This is an example ledger.",-->
-<!--//     "storageMechanism": STORAGE_DATA_STRUCTURE,-->
-<!--//     "consensusAlgorithm": CONSENSUS_ALGORITHM,-->
-<!--//   "previousBlock": {-->
-<!--//     "hash": "urn:sha256:0000000000000000000000000000000000000000000000000000000000000000"-->
-<!--//   },-->
-<!--//   "signature": SIGNATURE_VALUE-->
-<!--// }-->
+| Service                  	| Example URL                        	| Description                                 	|
+|--------------------------	|------------------------------------	|---------------------------------------------	|
+| ledgerAgentCreateService 	| POST /ledger-agents                	| Create a ledger agent.                      	|
+| ledgerAgentListService   	| GET /ledger-agents                 	| Get all ledger agents.                      	|
+| ledgerAgentStatusService 	| GET /ledger-agents/{agent}         	| Get the current status of the ledger agent. 	|
+| ledgerEventService       	| POST /ledger-agents/{agent}/events 	| Request the addition of an event to ledger. 	|
+| ledgerBlockService       	| GET /ledger-agents/{agent}/blocks  	| Get a specific block from the ledger.       	|
+| ledgerQueryService       	| GET /ledger-agents/{agent}/query   	| Query the current state of the ledger.      	|
 
-<!--//  3.3 Storage Block-->
-<!--// {-->
-<!--//   "@context": ["https://w3id.org/web-ledger/v1", MARKET_VERTICAL_CONTEXT],-->
-<!--//   "id": BLOCK_ID,-->
-<!--//   "type": "LedgerStorageBlock",-->
-<!--//   "setObject": [ OBJECTS ],-->
-<!--//   "previousBlock": {-->
-<!--//     "id": PREVIOUS_BLOCK_ID-->
-<!--//     "hash": PREVIOUS_BLOCK_HASH-->
-<!--//   },-->
-<!--//   "signature": SIGNATURE_VALUE-->
-<!--// }-->
 
-<!--// HTTP API-->
-<!--// Service	Example URL	Description-->
-<!--// ledgerAgentCreateService	POST /ledger-agents	Create a ledger agent.-->
-<!--// ledgerAgentListService	GET /ledger-agents	Get all ledger agents.-->
-<!--// ledgerAgentStatusService	GET /ledger-agents/{agent}	Get the current status of the ledger agent.-->
-<!--// ledgerEventService	POST /ledger-agents/{agent}/events	Request the addition of an event to ledger.-->
-<!--// ledgerBlockService	GET /ledger-agents/{agent}/blocks	Get a specific block from the ledger.-->
-<!--// ledgerQueryService	GET /ledger-agents/{agent}/query	Query the current state of the ledger.-->
+##Wiki Contents
 
-<!--// EXAMPLE 8: Ledger creation request-->
-<!--// POST /ledger-agents HTTP/1.1-->
-<!--// Host: example.com-->
-<!--// Content-Type: application/ld+json-->
-<!--// Content-Length: 1062-->
-<!--// Accept: application/ld+json, application/json, text/plain, */*-->
-<!--// Accept-Encoding: gzip, deflate-->
+[Serverless API](https://github.com/asteriusj/webledgerservice/wiki/Serverless-API)
 
-<!--// {-->
-<!--//   "@context": "https://w3id.org/web-ledger/v1",-->
-<!--//   "id": "did:1628bf39-c8f9-453f-93d7-0fbdebb3dfef/blocks/1",-->
-<!--//   "type": "LedgerConfigurationBlock",-->
-<!--//   "ledgerConfig": {-->
-<!--//     "id": "did:1628bf39-c8f9-453f-93d7-0fbdebb3dfef",-->
-<!--//     "type": "LedgerConfiguration",-->
-<!--//     "name": "example",-->
-<!--//     "description": "An example ledger.",-->
-<!--//     "storageMechanism": "SequentialList",-->
-<!--//     "consensusAlgorithm": {-->
-<!--//       "type": "ProofOfSignature2016",-->
-<!--//       "approvedSigner": [-->
-<!--//         "http://blue.example.com/keys/234",-->
-<!--//         "http://red.example.com/keys/987",-->
-<!--//       ],-->
-<!--//       "minimumSignaturesRequired":1-->
-<!--//     }-->
-<!--//   },-->
-<!--//   "previousBlock": {-->
-<!--//     "hash": "urn:sha256:0000000000000000000000000000000000000000000000000000000000000000"-->
-<!--//   },-->
-<!--//   "signature": {-->
-<!--//     "type": "RsaSignature2016",-->
-<!--//     "created": "2016-10-14T18:35:33Z",-->
-<!--//     "creator": "http://blue.example.com/keys/234",-->
-<!--//     "signatureValue": "HvfvRQ57EO...J0Q=="-->
-<!--//   }-->
-<!--// }-->
-<!--// EXAMPLE 9: Successful ledger creation response-->
-<!--// HTTP/1.1 201 Created-->
-<!--// Location: http://ledger.example.com/ledger-agents/example-->
-<!--// Cache-Control: no-cache, no-store, must-revalidate-->
-<!--// Pragma: no-cache-->
-<!--// Expires: 0-->
-<!--// Date: Fri, 14 Oct 2016 18:35:33 GMT-->
-<!--// Connection: keep-alive-->
-<!--// Transfer-Encoding: chunked-->
+[W3C Terminology](https://github.com/asteriusj/webledgerservice/wiki/W3C-Terminology)
 
-<!--// EXAMPLE 14-->
-<!--// POST /ledger-agents/example/events HTTP/1.1-->
-<!--// Host: example.com-->
-<!--// Connection: keep-alive-->
-<!--// Content-Length: 1054-->
-<!--// Content-Type: application/json;charset=UTF-8-->
-<!--// Accept: application/ld+json, application/json, text/plain, */*-->
-<!--// Accept-Encoding: gzip, deflate-->
-<!--// Accept-Language: en-US,en;q=0.8-->
+[W3C Data Model](https://github.com/asteriusj/webledgerservice/wiki/W3C-Data-Model)
 
-<!--// {-->
-<!--//   "@context": ["https://w3id.org/web-ledger/v1", "https://w3id.org/fema/v1"],-->
-<!--//   "type": "LedgerStorageEvent",-->
-<!--//   "setObject": [{-->
-<!--//     "id": "https://fema.gov/credentials/9754457",-->
-<!--//     "type": ["Credential", "EmergencyResponderCredential"],-->
-<!--//     "claim": {-->
-<!--//       "id": "did:bc380e48-a6d9-4602-ab20-1beb403d4bcc",-->
-<!--//       "emsLicense": {-->
-<!--//         "id": "ems:FF-12-01655",-->
-<!--//         "status": "valid"-->
-<!--//       }-->
-<!--//     }-->
-<!--//   }],-->
-<!--//   "signature": {-->
-<!--//     "type": "RsaSignature2016",-->
-<!--//     "created": "2016-10-14T19:47:15Z",-->
-<!--//     "creator": "https://example.com/keys/fema-key-1",-->
-<!--//     "signatureValue": "JoS27wqaTX...s0mpBFMgXIMw=="-->
-<!--//   }-->
-<!--// }-->
-<!--// If the storage attempt is successful, a HTTP 200 response is expected:-->
-
-<!--// EXAMPLE 15-->
-<!--// HTTP/1.1 201 Created-->
-<!--// Location: https://example.com/ledger-agents/example/events?id=d1328828-3d44-4e14-9c3a-263af54ed032-->
-<!--// Cache-Control: no-cache, no-store, must-revalidate-->
-<!--// Pragma: no-cache-->
-<!--// Expires: 0-->
-<!--// Date: Fri, 14 Oct 2016 19:47:16 GMT-->
-<!--// Connection: keep-alive-->
-<!--// Transfer-Encoding: chunked-->
-
-<!--// An example retrieval of a ledger block is shown below:-->
-<!--// EXAMPLE 16-->
-<!--// GET /ledger-agents/example/blocks?id=did:de7adbe7-79f2-425a-9dfb-76a234782f30/blocks/2 HTTP/1.1-->
-<!--// Host: example.com-->
-<!--// Connection: keep-alive-->
-<!--// Accept: application/ld+json, application/json, text/plain, */*-->
-<!--// Accept-Encoding: gzip, deflate, sdch-->
-<!--// Accept-Language: en-US,en;q=0.8-->
-<!--// If the ledger block retrieval is successful, a HTTP 200 response is expected:-->
-
-<!--// EXAMPLE 17-->
-<!--// HTTP/1.1 200 OK-->
-<!--// Cache-Control: no-cache, no-store, must-revalidate-->
-<!--// Pragma: no-cache-->
-<!--// Expires: 0-->
-<!--// Access-Control-Allow-Origin: *-->
-<!--// Vary: Accept, Accept-Encoding-->
-<!--// Content-Type: application/ld+json; charset=utf-8-->
-<!--// Etag: W/"41e-PJKXv/OxofX29WykKb3PZg"-->
-<!--// Content-Encoding: gzip-->
-<!--// Date: Fri, 14 Oct 2016 20:20:44 GMT-->
-<!--// Connection: keep-alive-->
-<!--// Transfer-Encoding: chunked-->
-
-<!--// {-->
-<!--//   "@context": ["https://w3id.org/web-ledger/v1", "https://w3id.org/fema/v1"],-->
-<!--//   "id": "did:de7adbe7-79f2-425a-9dfb-76a234782f30/blocks/2",-->
-<!--//   "type": "LedgerStorageBlock",-->
-<!--//   "setObject": [{-->
-<!--//     "id": "https://fema.gov/credentials/9754457",-->
-<!--//     "type": ["Credential", "EmergencyResponderCredential"],-->
-<!--//     "claim": {-->
-<!--//       "id": "did:bc380e48-a6d9-4602-ab20-1beb403d4bcc",-->
-<!--//       "emsLicense": {-->
-<!--//         "id": "ems:FF-12-01655",-->
-<!--//         "status": "valid"-->
-<!--//       }-->
-<!--//     }-->
-<!--//   }],-->
-<!--//   "previousBlock": {-->
-<!--//     "id": "did:de7adbe7-79f2-425a-9dfb-76a234782f30/blocks/1",-->
-<!--//     "hash": "urn:sha256:7eb0603c9a3982284c7db09b1eb40bc85a1177bdc594b027fba0e746b79db15b"-->
-<!--//   },-->
-<!--//   "signature": {-->
-<!--//     "type": "RsaSignature2016",-->
-<!--//     "created": "2016-10-14T19:47:15Z",-->
-<!--//     "creator": "http://example.com/keys/789",-->
-<!--//     "signatureValue": "JoS27wqa...BFMgXIMw=="-->
-<!--//   }-->
-<!--// }-->
+[W3C Ledger-Agent-HTTP-API](https://github.com/asteriusj/webledgerservice/wiki/W3C-Ledger-Agent-HTTP-API)
