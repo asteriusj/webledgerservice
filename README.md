@@ -9,6 +9,9 @@ npm install serverless -g
 ### Create a serverless function
 serverless create --template aws-nodejs
 
+## Test stack locally
+serverless invoke local -f hello --data '{"key":"bar"}' --log
+
 ### Deploy to cloud provider
 serverless deploy --aws-profile default
 
